@@ -12,7 +12,6 @@ module.exports = {
       //   type: Sequelize.STRING,
       // },
       invitedUserEmail: {
-        allowNull: false,
         type: Sequelize.STRING,
       },
       createdAt: {

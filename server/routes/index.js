@@ -17,13 +17,19 @@ module.exports = (app) => {
   app.put("/api/changepassword/:token", userController.changePassword);
 
   // Event Routes
-  app.post("/api/createEvent", verifyUser, eventController.createEvent);
+  app.post("/api/event/createEvent", verifyUser, eventController.createEvent);
   app.get(
-    "/api/getAllCreatedEvents",
+    "/api/event/getAllCreatedEvents",
     verifyUser,
     eventController.getAllCreatedEvents
   );
-  app.put("/api/:eventId", verifyUser, eventController.inviteUser);
+  app.put("/api/event/:eventId", verifyUser, eventController.inviteUser);
+  app.get(
+    "/api/event/invitedEvents",
+    verifyUser,
+    eventController.getInvitedEvents
+  );
+  app.get("/api/event/:eventId", verifyUser, eventController.eventDetail);
 
   // app.post("/api/login", userController.login);
   // app.get("/api/todos", todosController.list);

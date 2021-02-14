@@ -3,7 +3,6 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.INTEGER,
     eventId: DataTypes.INTEGER,
     invitedUserEmail: {
-      allowNull: false,
       type: DataTypes.STRING,
     },
   });

@@ -71,10 +71,9 @@ module.exports = {
   async inviteUser(req, res) {
     try {
       const { id } = req.decoded;
-      console.log(id, req.params.eventId);
-      const user = await User.findByPk(id);
+      const { email } = req.body;
+      const user = await User.findOne({ where: { email } });
       const event = await Event.findByPk(req.params.eventId);
-      console.log(user);
       // const guest = await user.createGuest({
       //   eventId: req.params.eventId,
       //   userId: id,
@@ -88,26 +87,95 @@ module.exports = {
             "Please enter email who is registered user on event management",
         });
       }
-
-      console.log("DAta ", await user.getEvents());
-
-      const guest = await Guest.create({
-        eventId: req.params.eventId,
-        userId: id,
+      const userAlreadyInvited = await Guest.findAll({
+        where: {
+          invitedUserEmail: email,
+          eventId: req.params.eventId,
+        },
       });
-      console.log(guest);
-      //   const userEvents = await Event.findAll({
-      //     where: {
-      //       userId: id,
-      //     },
-      //   });
-      return res.json({
-        payload: await user.getEvents(),
-        message: "User Events",
-      });
+      if (!userAlreadyInvited.length) {
+        const guest = await Guest.create({
+          eventId: req.params.eventId,
+          userId: user.id,
+          invitedUserEmail: email,
+        });
+        return res.json({
+          payload: guest,
+          message: "Invited Successfully",
+        });
+      }
+      res.json({ message: "You have already invited" });
     } catch (error) {
       console.log(error);
       res.json({ message: "Something went wrong" });
     }
   },
+
+  async getInvitedEvents(req, res) {
+    try {
+      const { id } = req.decoded;
+      const user = await User.findByPk(id);
+      if (user) {
+        const guest = await Guest.findAll({
+          where: {
+            userId: id,
+          },
+          include: Event,
+        });
+        return res.json({
+          message: "List of Invited Events",
+          payload: guest.map(({ dataValues }) => {
+            return dataValues;
+          }),
+        });
+      } else {
+        res.json({ message: "User not found" });
+      }
+    } catch (error) {
+      console.log(error);
+      return res.json({ message: "Something went wrong" });
+    }
+  },
+
+  async eventDetail(req, res) {
+    try {
+      const event = await Event.findByPk(req.params.eventId, { include: User });
+      if (!event) return res.json({ message: "Event not found" });
+
+      res.json({ message: "Event details", payload: event });
+    } catch (error) {
+      console.log(error);
+      return res.json({ message: "Something went wrong" });
+    }
+  },
+
+  // async updateEventDetail(req, res) {
+  //   const { eventName, time, description } = req.body;
+  //   const { isValid, error } = await validateEventInput(
+  //     eventName,
+  //     time,
+  //     description
+  //   );
+  //   if (isValid) {
+  //     try {
+  //       const userId = req.decoded;
+  //       const user = User.findById(userId.id);
+  //       // Not update others event
+  //       if (!user.userEvents.includes(req.params.eventId))
+  //         return res.json({ message: "Not allowed to update event details" });
+
+  //       const event = await Event.findById(req.params.eventId);
+  //       if (!event) return res.json({ message: "Event not found" });
+
+  //       event.eventName = eventName;
+  //       (event.time = time), (event.description = description);
+  //       await event.save();
+  //       res.json({ message: "Event details updated", payload: event });
+  //     } catch (error) {
+  //       return res.json({ message: "Something went wrong" });
+  //     }
+  //   } else {
+  //     return res.json({ message: error.details.map((e) => e.message) });
+  //   }
+  // },
 };
