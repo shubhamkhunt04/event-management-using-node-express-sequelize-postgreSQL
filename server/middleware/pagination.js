@@ -36,12 +36,11 @@ module.exports.paginatedResult = (model, sortFlag = true) => {
     try {
       let results;
       if (sortFlag) {
-        results = await model
-          .find(searchOptions)
-          .limit(limit)
-          .skip(startIndex)
-          .sort(sortOptions)
-          .exec();
+        results = await model.findOne({ where: searchOptions });
+        // .limit(limit)
+        // .skip(startIndex)
+        // .sort(sortOptions)
+        // .exec();
       } else {
         results = await model.find().limit(limit).skip(startIndex).exec();
       }

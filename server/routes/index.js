@@ -1,5 +1,10 @@
 const userController = require("../controllers").user;
 const eventController = require("../controllers").event;
+const User = require("../models").User;
+const Event = require("../models").Event;
+const Guest = require("../models").Guest;
+const { paginatedResult } = require("../middleware/pagination");
+// const { page } = require("../util/page");
 
 const { verifyUser } = require("../middleware/verifyUser");
 
@@ -21,7 +26,17 @@ module.exports = (app) => {
   app.get(
     "/api/event/getAllCreatedEvents",
     verifyUser,
+    // page,
+    // paginatedResult(Event),
     eventController.getAllCreatedEvents
+  );
+  app.get(
+    "/api/event/getAllEvents",
+    verifyUser,
+    // pagination,
+    // page,
+    // paginatedResult(Event),
+    eventController.getAllEvents
   );
   app.put("/api/event/:eventId", verifyUser, eventController.inviteUser);
   app.get(

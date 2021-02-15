@@ -8,6 +8,9 @@ const {
   validateInviteInput,
 } = require("../util/validators/eventValidator");
 const { paginatedResult } = require("../middleware/pagination");
+const { Op } = require("sequelize");
+const { page } = require("../util/page");
+const { pagination } = require("../util/pagination");
 
 module.exports = {
   async createEvent(req, res) {
@@ -51,21 +54,97 @@ module.exports = {
   },
 
   async getAllCreatedEvents(req, res) {
+    // http://localhost:5000/api/event/getAllCreatedEvents?sort=eventName:asc
     try {
       const { id } = req.decoded;
+      // const {limit,sort,search,page} = req.query
+      // const limit = req.query.limit || null;
+      // const offset = (req.query.page - 1) * req.query.limit || 0;
       const user = await User.findByPk(id);
-      //   const userEvents = await Event.findAll({
-      //     where: {
-      //       userId: id,
-      //     },
-      //   });
+      const { limits, offset, order, searchOpt } = pagination(
+        req.query.page,
+        req.query.limit,
+        req.query.sort,
+        req.query.search
+      );
+
+      // let str, order;
+      // if (req.query.sort) {
+      //   str = req.query.sort.split(":");
+      //   str[1] = str[1].toUpperCase();
+      //   order = [str];
+      // } else {
+      //   order = [];
+      // }
+      // let searchOpt = {};
+      // if (req.query.search) {
+      //   let searchQuery = req.query.search.split(":");
+      //   searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
+      // }
       return res.json({
-        payload: await user.getEvents(),
+        payload: await user.getEvents({
+          where: searchOpt,
+          limit: limits,
+          offset,
+          order,
+        }),
         message: "User Events",
       });
     } catch (error) {
+      console.log(error);
       res.json({ message: "Something went wrong" });
     }
+  },
+
+  // async getAllCreatedEvents(req, res) {
+  //   // http://localhost:5000/api/event/getAllCreatedEvents?sort=eventName:asc
+  //   try {
+  //     const { id } = req.decoded;
+  //     const limit = req.query.limit || null;
+  //     const offset = (req.query.page - 1) * req.query.limit || 0;
+  //     const user = await User.findByPk(id);
+  //     //   const userEvents = await Event.findAll({
+  //     //     where: {
+  //     //       userId: id,
+  //     //     },
+  //     //   });
+  //     let str, order;
+  //     if (req.query.sort) {
+  //       str = req.query.sort.split(":");
+  //       str[1] = str[1].toUpperCase();
+  //       order = [str];
+  //     } else {
+  //       order = [];
+  //     }
+  //     let searchOpt = {};
+  //     if (req.query.search) {
+  //       let searchQuery = req.query.search.split(":");
+  //       searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
+  //     }
+  //     return res.json({
+  //       payload: await user.getEvents({
+  //         where: searchOpt,
+  //         limit,
+  //         offset,
+  //         order: order,
+  //       }),
+  //       message: "User Events",
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     res.json({ message: "Something went wrong" });
+  //   }
+  // },
+
+  async getAllEvents(req, res) {
+    const { limit, offset, order, searchOpt } = pagination(req);
+    const events = await Event.findAll({
+      where: searchOpt,
+      limit,
+      offset,
+      order,
+    });
+    res.json({ message: "All Events List", payload: events });
   },
 
   async inviteUser(req, res) {

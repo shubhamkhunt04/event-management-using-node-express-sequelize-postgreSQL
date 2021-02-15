@@ -31,7 +31,7 @@ module.exports = {
           const user = await User.create({ username, email, password });
           console.log(user);
           const token = generateToken(user);
-
+          user.password = null;
           return res.json({
             payload: { user, token },
             message: "User register successfully",
