@@ -12,8 +12,8 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "eventId",
       onDelete: "CASCADE",
     });
-    Guest.hasMany(models.User, {
-      foreignKey: "id",
+    Guest.belongsTo(models.User, {
+      foreignKey: "userId",
       as: "users",
     });
   };

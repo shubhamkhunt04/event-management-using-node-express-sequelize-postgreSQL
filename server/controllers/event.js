@@ -87,12 +87,17 @@ module.exports = {
             "Please enter email who is registered user on event management",
         });
       }
+      // other user not allow to invite in event
+      if (id !== event.userId) {
+        return res.json({ message: "You are not allow to invite users" });
+      }
       const userAlreadyInvited = await Guest.findAll({
         where: {
           invitedUserEmail: email,
           eventId: req.params.eventId,
         },
       });
+
       if (!userAlreadyInvited.length) {
         const guest = await Guest.create({
           eventId: req.params.eventId,
@@ -149,33 +154,43 @@ module.exports = {
     }
   },
 
-  // async updateEventDetail(req, res) {
-  //   const { eventName, time, description } = req.body;
-  //   const { isValid, error } = await validateEventInput(
-  //     eventName,
-  //     time,
-  //     description
-  //   );
-  //   if (isValid) {
-  //     try {
-  //       const userId = req.decoded;
-  //       const user = User.findById(userId.id);
-  //       // Not update others event
-  //       if (!user.userEvents.includes(req.params.eventId))
-  //         return res.json({ message: "Not allowed to update event details" });
-
-  //       const event = await Event.findById(req.params.eventId);
-  //       if (!event) return res.json({ message: "Event not found" });
-
-  //       event.eventName = eventName;
-  //       (event.time = time), (event.description = description);
-  //       await event.save();
-  //       res.json({ message: "Event details updated", payload: event });
-  //     } catch (error) {
-  //       return res.json({ message: "Something went wrong" });
-  //     }
-  //   } else {
-  //     return res.json({ message: error.details.map((e) => e.message) });
-  //   }
-  // },
+  async updateEventDetail(req, res) {
+    const { eventName, time, description } = req.body;
+    const { isValid, error } = await validateEventInput(
+      eventName,
+      time,
+      description
+    );
+    if (isValid) {
+      try {
+        const { id } = req.decoded;
+        // const guest = await Guest.findAll({
+        //   where: {
+        //     eventId: req.params.eventId,
+        //     userId: id,
+        //   },
+        // });
+        const event = await Event.findByPk(req.params.eventId);
+        // If req id and params id match ,so user is valid
+        if (event.userId === id) {
+          await event.update({
+            eventName,
+            description,
+            time,
+          });
+          res.json({ message: "Event updated successfully", payload: event });
+        } else {
+          res.json({
+            message:
+              "Only event creators are allow to update the event details",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        return res.json({ message: "Something went wrong" });
+      }
+    } else {
+      return res.json({ message: error.details.map((e) => e.message) });
+    }
+  },
 };
