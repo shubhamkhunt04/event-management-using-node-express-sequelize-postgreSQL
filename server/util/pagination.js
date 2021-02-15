@@ -1,9 +1,11 @@
 const { Op } = require("sequelize");
-
+// http://localhost:5000/api/event/getAllEvents?limit=4&page=1&search=eventName:Node for testing
 module.exports.pagination = (req) => {
   //   console.log("\n\ncalled", sort, page, limit, search);
-  const limit = req.query.limit || null;
-  const offset = (req.query.page - 1) * req.query.limit || 0;
+  console.log(req.query.page);
+  const limit = parseInt(req.query.limit) || null;
+  const offset =
+    (parseInt(req.query.page) - 1) * parseInt(req.query.limit) || 0;
   console.log(req.query);
   let str, order;
   if (req.query.sort) {

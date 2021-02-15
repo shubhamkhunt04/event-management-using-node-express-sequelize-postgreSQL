@@ -2,14 +2,10 @@ const express = require("express");
 const User = require("../models").User;
 const Event = require("../models").Event;
 const Guest = require("../models").Guest;
-const { verifyUser } = require("../middleware/verifyUser");
 const {
   validateEventInput,
   validateInviteInput,
 } = require("../util/validators/eventValidator");
-const { paginatedResult } = require("../middleware/pagination");
-const { Op } = require("sequelize");
-const { page } = require("../util/page");
 const { pagination } = require("../util/pagination");
 
 module.exports = {
@@ -61,12 +57,13 @@ module.exports = {
       // const limit = req.query.limit || null;
       // const offset = (req.query.page - 1) * req.query.limit || 0;
       const user = await User.findByPk(id);
-      const { limits, offset, order, searchOpt } = pagination(
-        req.query.page,
-        req.query.limit,
-        req.query.sort,
-        req.query.search
-      );
+      // const { limits, offset, order, searchOpt } = pagination(
+      //   req.query.page,
+      //   req.query.limit,
+      //   req.query.sort,
+      //   req.query.search
+      // );
+      const { limit, offset, order, searchOpt } = pagination(req);
 
       // let str, order;
       // if (req.query.sort) {
@@ -84,7 +81,7 @@ module.exports = {
       return res.json({
         payload: await user.getEvents({
           where: searchOpt,
-          limit: limits,
+          limit,
           offset,
           order,
         }),
@@ -138,6 +135,7 @@ module.exports = {
 
   async getAllEvents(req, res) {
     const { limit, offset, order, searchOpt } = pagination(req);
+    console.log("limit", limit, offset, order, searchOpt);
     const events = await Event.findAll({
       where: searchOpt,
       limit,
@@ -148,50 +146,55 @@ module.exports = {
   },
 
   async inviteUser(req, res) {
-    try {
-      const { id } = req.decoded;
-      const { email } = req.body;
-      const user = await User.findOne({ where: { email } });
-      const event = await Event.findByPk(req.params.eventId);
-      // const guest = await user.createGuest({
-      //   eventId: req.params.eventId,
-      //   userId: id,
-      // });
-      if (!event) {
-        return res.json({ message: "Event not found" });
-      }
-      if (!user) {
-        return res.json({
-          message:
-            "Please enter email who is registered user on event management",
+    const { id } = req.decoded;
+    const { email } = req.body;
+    const { isValid, error } = await validateInviteInput(email);
+    if (isValid) {
+      try {
+        const user = await User.findOne({ where: { email } });
+        const event = await Event.findByPk(req.params.eventId);
+        // const guest = await user.createGuest({
+        //   eventId: req.params.eventId,
+        //   userId: id,
+        // });
+        if (!event) {
+          return res.json({ message: "Event not found" });
+        }
+        if (!user) {
+          return res.json({
+            message:
+              "Please enter email who is registered user on event management",
+          });
+        }
+        // other user not allow to invite in event
+        if (id !== event.userId) {
+          return res.json({ message: "You are not allow to invite users" });
+        }
+        const userAlreadyInvited = await Guest.findAll({
+          where: {
+            invitedUserEmail: email,
+            eventId: req.params.eventId,
+          },
         });
-      }
-      // other user not allow to invite in event
-      if (id !== event.userId) {
-        return res.json({ message: "You are not allow to invite users" });
-      }
-      const userAlreadyInvited = await Guest.findAll({
-        where: {
-          invitedUserEmail: email,
-          eventId: req.params.eventId,
-        },
-      });
 
-      if (!userAlreadyInvited.length) {
-        const guest = await Guest.create({
-          eventId: req.params.eventId,
-          userId: user.id,
-          invitedUserEmail: email,
-        });
-        return res.json({
-          payload: guest,
-          message: "Invited Successfully",
-        });
+        if (!userAlreadyInvited.length) {
+          const guest = await Guest.create({
+            eventId: req.params.eventId,
+            userId: user.id,
+            invitedUserEmail: email,
+          });
+          return res.json({
+            payload: guest,
+            message: "Invited Successfully",
+          });
+        }
+        res.json({ message: "You have already invited" });
+      } catch (error) {
+        console.log(error);
+        res.json({ message: "Something went wrong" });
       }
-      res.json({ message: "You have already invited" });
-    } catch (error) {
-      console.log(error);
-      res.json({ message: "Something went wrong" });
+    } else {
+      return res.json({ message: error.details.map((e) => e.message) });
     }
   },
 

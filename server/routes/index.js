@@ -1,10 +1,5 @@
 const userController = require("../controllers").user;
 const eventController = require("../controllers").event;
-const User = require("../models").User;
-const Event = require("../models").Event;
-const Guest = require("../models").Guest;
-const { paginatedResult } = require("../middleware/pagination");
-// const { page } = require("../util/page");
 
 const { verifyUser } = require("../middleware/verifyUser");
 
