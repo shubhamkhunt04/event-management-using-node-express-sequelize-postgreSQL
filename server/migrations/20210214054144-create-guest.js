@@ -8,9 +8,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      // eventName: {
-      //   type: Sequelize.STRING,
-      // },
       invitedUserEmail: {
         type: Sequelize.STRING,
       },

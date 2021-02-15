@@ -1,7 +1,6 @@
 const { Op } = require("sequelize");
 // http://localhost:5000/api/event/getAllEvents?limit=4&page=1&search=eventName:Node for testing
 module.exports.pagination = (req) => {
-  //   console.log("\n\ncalled", sort, page, limit, search);
   console.log(req.query.page);
   const limit = parseInt(req.query.limit) || null;
   const offset =
@@ -22,29 +21,3 @@ module.exports.pagination = (req) => {
   }
   return { searchOpt, limit, offset, order };
 };
-// module.exports.pagination = (
-//   page = 0,
-//   limit = null,
-//   sort = null,
-//   search = null
-// ) => {
-//   console.log("\n\ncalled", sort, page, limit, search);
-//   const limits = limit || null;
-//   const offset = (page - 1) * limit || 0;
-
-//   console.log(sort);
-//   var str, order;
-//   if (sort) {
-//     str = sort.split(":");
-//     str[1] = str[1].toUpperCase();
-//     order = [str];
-//   } else {
-//     order = [];
-//   }
-//   var searchOpt = {};
-//   if (search) {
-//     let searchQuery = search.split(":");
-//     searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
-//   }
-//   return { searchOpt, limits, offset, order };
-// };

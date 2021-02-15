@@ -21,13 +21,6 @@ module.exports = {
       const { id } = req.decoded;
       try {
         const user = await User.findByPk(id);
-        // const event = await Event.create({
-        //   eventName,
-        //   time,
-        //   description,
-        //   createdBy: user.username,
-        //   userId: user.id,
-        // });
         const event = await user.createEvent({
           eventName,
           time,
@@ -53,31 +46,10 @@ module.exports = {
     // http://localhost:5000/api/event/getAllCreatedEvents?sort=eventName:asc
     try {
       const { id } = req.decoded;
-      // const {limit,sort,search,page} = req.query
-      // const limit = req.query.limit || null;
-      // const offset = (req.query.page - 1) * req.query.limit || 0;
       const user = await User.findByPk(id);
-      // const { limits, offset, order, searchOpt } = pagination(
-      //   req.query.page,
-      //   req.query.limit,
-      //   req.query.sort,
-      //   req.query.search
-      // );
+
       const { limit, offset, order, searchOpt } = pagination(req);
 
-      // let str, order;
-      // if (req.query.sort) {
-      //   str = req.query.sort.split(":");
-      //   str[1] = str[1].toUpperCase();
-      //   order = [str];
-      // } else {
-      //   order = [];
-      // }
-      // let searchOpt = {};
-      // if (req.query.search) {
-      //   let searchQuery = req.query.search.split(":");
-      //   searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
-      // }
       return res.json({
         payload: await user.getEvents({
           where: searchOpt,
@@ -92,46 +64,6 @@ module.exports = {
       res.json({ message: "Something went wrong" });
     }
   },
-
-  // async getAllCreatedEvents(req, res) {
-  //   // http://localhost:5000/api/event/getAllCreatedEvents?sort=eventName:asc
-  //   try {
-  //     const { id } = req.decoded;
-  //     const limit = req.query.limit || null;
-  //     const offset = (req.query.page - 1) * req.query.limit || 0;
-  //     const user = await User.findByPk(id);
-  //     //   const userEvents = await Event.findAll({
-  //     //     where: {
-  //     //       userId: id,
-  //     //     },
-  //     //   });
-  //     let str, order;
-  //     if (req.query.sort) {
-  //       str = req.query.sort.split(":");
-  //       str[1] = str[1].toUpperCase();
-  //       order = [str];
-  //     } else {
-  //       order = [];
-  //     }
-  //     let searchOpt = {};
-  //     if (req.query.search) {
-  //       let searchQuery = req.query.search.split(":");
-  //       searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
-  //     }
-  //     return res.json({
-  //       payload: await user.getEvents({
-  //         where: searchOpt,
-  //         limit,
-  //         offset,
-  //         order: order,
-  //       }),
-  //       message: "User Events",
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.json({ message: "Something went wrong" });
-  //   }
-  // },
 
   async getAllEvents(req, res) {
     const { limit, offset, order, searchOpt } = pagination(req);
@@ -153,10 +85,6 @@ module.exports = {
       try {
         const user = await User.findOne({ where: { email } });
         const event = await Event.findByPk(req.params.eventId);
-        // const guest = await user.createGuest({
-        //   eventId: req.params.eventId,
-        //   userId: id,
-        // });
         if (!event) {
           return res.json({ message: "Event not found" });
         }
@@ -246,12 +174,7 @@ module.exports = {
     if (isValid) {
       try {
         const { id } = req.decoded;
-        // const guest = await Guest.findAll({
-        //   where: {
-        //     eventId: req.params.eventId,
-        //     userId: id,
-        //   },
-        // });
+
         const event = await Event.findByPk(req.params.eventId);
         // If req id and params id match ,so user is valid
         if (event.userId === id) {
