@@ -3,13 +3,10 @@ const eventController = require("../controllers").event;
 
 const { verifyUser } = require("../middleware/verifyUser");
 
+// const userRouter = require("./userRouter");
 module.exports = (app) => {
-  app.get("/api", (req, res) =>
-    res.status(200).send({
-      message: "Welcome to the Todos API!",
-    })
-  );
   // User Routes
+
   app.post("/api/register", userController.register);
   app.post("/api/login", userController.login);
   app.put("/api/updatepassword", verifyUser, userController.updatepassword);
@@ -17,22 +14,14 @@ module.exports = (app) => {
   app.put("/api/changepassword/:token", userController.changePassword);
 
   // Event Routes
+
   app.post("/api/event/createEvent", verifyUser, eventController.createEvent);
   app.get(
     "/api/event/getAllCreatedEvents",
     verifyUser,
-    // page,
-    // paginatedResult(Event),
     eventController.getAllCreatedEvents
   );
-  app.get(
-    "/api/event/getAllEvents",
-    verifyUser,
-    // pagination,
-    // page,
-    // paginatedResult(Event),
-    eventController.getAllEvents
-  );
+  app.get("/api/event/getAllEvents", verifyUser, eventController.getAllEvents);
   app.put("/api/event/:eventId", verifyUser, eventController.inviteUser);
   app.get(
     "/api/event/invitedEvents",
@@ -45,4 +34,5 @@ module.exports = (app) => {
     verifyUser,
     eventController.updateEventDetail
   );
+  app.delete("/api/event/:eventId", verifyUser, eventController.deleteEvent);
 };

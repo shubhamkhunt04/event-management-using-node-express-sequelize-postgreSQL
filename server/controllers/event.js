@@ -198,4 +198,32 @@ module.exports = {
       return res.json({ message: error.details.map((e) => e.message) });
     }
   },
+
+  async deleteEvent(req, res) {
+    try {
+      const { id } = req.decoded;
+      const event = await Event.findByPk(req.params.eventId);
+
+      if (!event) return res.json({ message: "Event not found" });
+
+      if (event.userId === id) {
+        const deleteEvent = await Event.destroy({
+          where: {
+            id: req.params.eventId,
+          },
+        });
+        return res.json({
+          message: "Event deleted successfully",
+          payload: deleteEvent,
+        });
+      } else {
+        return res.json({
+          message: "You are not authorize to delete this event",
+        });
+      }
+    } catch (error) {
+      console.log(error.message);
+      return res.json({ message: "Something went wrong!" });
+    }
+  },
 };
