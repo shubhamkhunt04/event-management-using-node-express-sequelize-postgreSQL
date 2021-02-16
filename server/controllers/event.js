@@ -154,7 +154,16 @@ module.exports = {
 
   async eventDetail(req, res) {
     try {
-      const event = await Event.findByPk(req.params.eventId, { include: User });
+      // const event = await Event.findByPk(req.params.eventId, {
+      //   include: User,
+      //   attributes: ["eventName", "time"],
+      // });
+      const event = await Event.findByPk(req.params.eventId, {
+        include: [
+          { model: User, as: "users", attributes: ["username", "email"] },
+        ],
+        attributes: ["eventName"],
+      });
       if (!event) return res.json({ message: "Event not found" });
 
       res.json({ message: "Event details", payload: event });

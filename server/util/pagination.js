@@ -1,11 +1,9 @@
 const { Op } = require("sequelize");
 // http://localhost:5000/api/event/getAllEvents?limit=4&page=1&search=eventName:Node for testing
 module.exports.pagination = (req) => {
-  console.log(req.query.page);
   const limit = parseInt(req.query.limit) || null;
   const offset =
     (parseInt(req.query.page) - 1) * parseInt(req.query.limit) || 0;
-  console.log(req.query);
   let str, order;
   if (req.query.sort) {
     str = req.query.sort.split(":");
@@ -17,7 +15,7 @@ module.exports.pagination = (req) => {
   let searchOpt = {};
   if (req.query.search) {
     let searchQuery = req.query.search.split(":");
-    searchOpt[searchQuery[0]] = { [Op.like]: "%" + searchQuery[1] + "%" };
+    searchOpt[searchQuery[0]] = { [Op.iLike]: searchQuery[1] + "%" };
   }
   return { searchOpt, limit, offset, order };
 };
