@@ -21,7 +21,7 @@ module.exports = (app) => {
     verifyUser,
     eventController.getAllCreatedEvents
   );
-  app.get("/api/event/getAllEvents", verifyUser, eventController.getAllEvents);
+  app.get("/api/event/getAllEvents", eventController.getAllEvents);
   app.put("/api/event/:eventId", verifyUser, eventController.inviteUser);
   app.get(
     "/api/event/invitedEvents",
